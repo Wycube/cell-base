@@ -1,0 +1,5 @@
+D:/Spencer/dev/C++/cellular-automata/build/CMakeFiles/edit_cache.dir
+D:/Spencer/dev/C++/cellular-automata/build/CMakeFiles/rebuild_cache.dir
+D:/Spencer/dev/C++/cellular-automata/build/src/CMakeFiles/rebuild_cache.dir
+D:/Spencer/dev/C++/cellular-automata/build/src/CMakeFiles/cell.dir
+D:/Spencer/dev/C++/cellular-automata/build/src/CMakeFiles/edit_cache.dir

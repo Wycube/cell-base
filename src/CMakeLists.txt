@@ -1,0 +1,1 @@
+add_executable(cell main.c Playfield.c Utility.c)
