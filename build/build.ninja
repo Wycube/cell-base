@@ -397,7 +397,7 @@ build cmake_object_order_depends_target_cell: phony || cmake_object_order_depend
 
 build src/CMakeFiles/cell.dir/main.c.obj: C_COMPILER__cell_Debug ../src/main.c || cmake_object_order_depends_target_cell
   DEP_FILE = src\CMakeFiles\cell.dir\main.c.obj.d
-  FLAGS = -g -Xclang -gcodeview -O0 -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -D_CRT_SECURE_NO_WARNINGS -Wall -Wextra -pedantic -Werror
+  FLAGS = -g -Xclang -gcodeview -O0 -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -D_CRT_SECURE_NO_WARNINGS -Wall -Wextra -pedantic
   INCLUDES = -I../lib/glfw/include -I../lib/glad/include -I../include
   OBJECT_DIR = src\CMakeFiles\cell.dir
   OBJECT_FILE_DIR = src\CMakeFiles\cell.dir
@@ -406,7 +406,7 @@ build src/CMakeFiles/cell.dir/main.c.obj: C_COMPILER__cell_Debug ../src/main.c |
 
 build src/CMakeFiles/cell.dir/Playfield.c.obj: C_COMPILER__cell_Debug ../src/Playfield.c || cmake_object_order_depends_target_cell
   DEP_FILE = src\CMakeFiles\cell.dir\Playfield.c.obj.d
-  FLAGS = -g -Xclang -gcodeview -O0 -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -D_CRT_SECURE_NO_WARNINGS -Wall -Wextra -pedantic -Werror
+  FLAGS = -g -Xclang -gcodeview -O0 -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -D_CRT_SECURE_NO_WARNINGS -Wall -Wextra -pedantic
   INCLUDES = -I../lib/glfw/include -I../lib/glad/include -I../include
   OBJECT_DIR = src\CMakeFiles\cell.dir
   OBJECT_FILE_DIR = src\CMakeFiles\cell.dir
@@ -415,7 +415,16 @@ build src/CMakeFiles/cell.dir/Playfield.c.obj: C_COMPILER__cell_Debug ../src/Pla
 
 build src/CMakeFiles/cell.dir/Utility.c.obj: C_COMPILER__cell_Debug ../src/Utility.c || cmake_object_order_depends_target_cell
   DEP_FILE = src\CMakeFiles\cell.dir\Utility.c.obj.d
-  FLAGS = -g -Xclang -gcodeview -O0 -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -D_CRT_SECURE_NO_WARNINGS -Wall -Wextra -pedantic -Werror
+  FLAGS = -g -Xclang -gcodeview -O0 -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -D_CRT_SECURE_NO_WARNINGS -Wall -Wextra -pedantic
+  INCLUDES = -I../lib/glfw/include -I../lib/glad/include -I../include
+  OBJECT_DIR = src\CMakeFiles\cell.dir
+  OBJECT_FILE_DIR = src\CMakeFiles\cell.dir
+  TARGET_COMPILE_PDB = src\CMakeFiles\cell.dir\
+  TARGET_PDB = bin\Debug\bin\cell.pdb
+
+build src/CMakeFiles/cell.dir/Game.c.obj: C_COMPILER__cell_Debug ../src/Game.c || cmake_object_order_depends_target_cell
+  DEP_FILE = src\CMakeFiles\cell.dir\Game.c.obj.d
+  FLAGS = -g -Xclang -gcodeview -O0 -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -D_CRT_SECURE_NO_WARNINGS -Wall -Wextra -pedantic
   INCLUDES = -I../lib/glfw/include -I../lib/glad/include -I../include
   OBJECT_DIR = src\CMakeFiles\cell.dir
   OBJECT_FILE_DIR = src\CMakeFiles\cell.dir
@@ -430,7 +439,7 @@ build src/CMakeFiles/cell.dir/Utility.c.obj: C_COMPILER__cell_Debug ../src/Utili
 #############################################
 # Link the executable bin\Debug\bin\cell.exe
 
-build bin/Debug/bin/cell.exe: C_EXECUTABLE_LINKER__cell_Debug src/CMakeFiles/cell.dir/main.c.obj src/CMakeFiles/cell.dir/Playfield.c.obj src/CMakeFiles/cell.dir/Utility.c.obj | bin/Debug/lib/glfw3.lib bin/Debug/lib/glad.lib || bin/Debug/lib/glad.lib bin/Debug/lib/glfw3.lib
+build bin/Debug/bin/cell.exe: C_EXECUTABLE_LINKER__cell_Debug src/CMakeFiles/cell.dir/main.c.obj src/CMakeFiles/cell.dir/Playfield.c.obj src/CMakeFiles/cell.dir/Utility.c.obj src/CMakeFiles/cell.dir/Game.c.obj | bin/Debug/lib/glfw3.lib bin/Debug/lib/glad.lib || bin/Debug/lib/glad.lib bin/Debug/lib/glfw3.lib
   FLAGS = -g -Xclang -gcodeview -O0 -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd
   LINK_LIBRARIES = bin/Debug/lib/glfw3.lib  bin/Debug/lib/glad.lib  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 -loldnames
   OBJECT_DIR = src\CMakeFiles\cell.dir
