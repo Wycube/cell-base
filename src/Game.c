@@ -2,9 +2,9 @@
 
 //Super basic vertex and fragment shaders
 static const char *vertex_shader = 
-"#version 130\n"
-"in vec2 pos;\n"
-"out vec2 texCoord;\n"
+"#version 120\n"
+"attribute vec2 pos;\n"
+"varying vec2 texCoord;\n"
 "void main() {\n"
 "   gl_Position = vec4(pos, 0, 1);\n"
 "   vec2 new_pos = pos * vec2(1.0f, -1.0f);\n"
@@ -12,9 +12,9 @@ static const char *vertex_shader =
 "}";
 
 static const char *fragment_shader = 
-"#version 130\n"
+"#version 120\n"
 "uniform sampler2D tex;\n"
-"in vec2 texCoord;\n"
+"varying vec2 texCoord;\n"
 "void main() {\n"
 "   gl_FragColor = texture2D(tex, texCoord);\n"
 "}";

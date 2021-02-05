@@ -47,6 +47,32 @@ void next_gen(uint32_t *field, int width, int height) {
     free(buffer);
 }
 
+//TODO: Add a struct containing information about the current cell color
+//and other configuration data.
+void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
+
+	uint32_t *field = (uint32_t*)glfwGetWindowUserPointer(window);
+
+	if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+		//Set the pixel there
+		double x, y;
+		glfwGetCursorPos(window, &x, &y);
+
+		//Tranform the coordinates
+		int sx, sy;
+		sx = x / 20;
+		sy = y / 20;
+
+		uint32_t color = field[sx + sy * 20];
+
+		if(color == 0xffffffff) {
+			field[sx + sy * 20] = 0x000000ff;
+		} else {
+			field[sx + sy * 20] = 0xffffffff;
+		}
+	}	
+}
+
 int main() {
     Game game = create_game(400, 400, "Cellular Automata");
     init_opengl_objects();
@@ -62,7 +88,9 @@ int main() {
     playfield.field[4 + 7 * playfield.width] = rgb_to_int(0, 0, 0);
 
     //Generate checker board pattern
-    
+    glfwSetMouseButtonCallback(game.window, mouse_button_callback);
+    glfwSetWindowUserPointer(game.window, playfield.field);
+
     uint32_t x, y;
     for(y = 0; y < playfield.width; y++) {
         for(x = 0; x < playfield.height; x++) {
