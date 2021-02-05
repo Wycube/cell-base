@@ -50,7 +50,7 @@ void next_gen(uint32_t *field, int width, int height) {
 //TODO: Add a struct containing information about the current cell color
 //and other configuration data.
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
-
+    (void)mods;
 	uint32_t *field = (uint32_t*)glfwGetWindowUserPointer(window);
 
 	if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
