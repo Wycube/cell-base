@@ -5,8 +5,20 @@ static const char *vertex_shader =
 "#version 120\n"
 "attribute vec2 pos;\n"
 "varying vec2 texCoord;\n"
+"uniform float width;\n"
+"uniform float height;\n"
+"uniform float fieldWidth;\n"
+"uniform float fieldHeight;\n"
+"uniform float scale;\n"
+"uniform vec2 translation;\n"
+""
+"vec2 worldToScreen(vec2 worldPos) {\n"
+"   return (worldPos + translation) * scale;\n"
+"}\n"
+""
 "void main() {\n"
-"   gl_Position = vec4(pos, 0, 1);\n"
+"   vec2 view_pos = worldToScreen(pos * vec2(fieldWidth, fieldHeight));\n"
+"   gl_Position = vec4(view_pos / vec2(width, height), 0, 1);\n"
 "   vec2 new_pos = pos * vec2(1.0f, -1.0f);\n"
 "   texCoord = (new_pos + 1.0f) / 2.0f;\n"
 "}";
@@ -45,7 +57,7 @@ Game create_game(int width, int height, const char *title) {
     }
 
     //Create struct and return it
-    Game game = {window, width, height};
+    Game game = {window, width, height, {1.0f, {0.0f, 0.0f}}};
     return game;
 }
 
@@ -55,10 +67,15 @@ void destroy_game(Game *game) {
     game->window = NULL;
 }
 
+//put this in a struct later
+GLuint program;
+GLuint tex;
+GLuint vbo;
+
 //Creates opengl shaders and program
 void init_opengl_objects() {
     //Create Texture and setup Texture stuff
-    GLuint tex = 0;
+    tex = 0;
     glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, tex);
     
@@ -100,7 +117,7 @@ void init_opengl_objects() {
     }
 
     //Create program, link, and use it
-    GLuint program = glCreateProgram();
+    program = glCreateProgram();
     glAttachShader(program, vertex);
     glAttachShader(program, fragment);
     glLinkProgram(program);
@@ -116,7 +133,6 @@ void init_opengl_objects() {
          1.0f, -1.0f
     };
 
-    GLuint vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(pos), &pos, GL_STATIC_DRAW);
@@ -125,11 +141,41 @@ void init_opengl_objects() {
     glVertexAttribPointer(pos_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(pos_attrib);
 
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 }
 
-void draw_texture(uint32_t *tex, int width, int height) {
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, tex);
-    glClear(GL_COLOR_BUFFER_BIT);
+void draw_game(Game *game, uint32_t *texture, int tex_width, int tex_height) {
+    glUseProgram(program);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+    //Enable attribute
+    GLuint pos_attrib = glGetAttribLocation(program, "pos");
+    glVertexAttribPointer(pos_attrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+    // //Pass in view matrix
+    // GLint u_ortho_mat = glGetUniformLocation(program, "orthoMat");
+    // float mat[4];
+    // mat[0] = 1.0f / game->width;
+    // mat[3] = 1.0f / game->height;
+    // glUniformMatrix2fv(u_ortho_mat, 1, GL_FALSE, mat);
+
+    GLint u_width = glGetUniformLocation(program, "width");
+    GLint u_height = glGetUniformLocation(program, "height");
+    glUniform1f(u_width, (float)game->width);
+    glUniform1f(u_height, (float)game->height);
+
+    GLint u_field_width = glGetUniformLocation(program, "fieldWidth");
+    GLint u_field_height = glGetUniformLocation(program, "fieldHeight");
+    glUniform1f(u_field_width, (float)tex_width);
+    glUniform1f(u_field_height, (float)tex_height);
+
+    GLint u_scale = glGetUniformLocation(program, "scale");
+    GLint u_translation = glGetUniformLocation(program, "translation");
+    glUniform1f(u_scale, game->transform.scale);
+    glUniform2f(u_translation, game->transform.position.x, game->transform.position.y);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex_width, tex_height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, texture);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
