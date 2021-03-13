@@ -17,8 +17,9 @@ static const char *vertex_shader =
 "}\n"
 ""
 "void main() {\n"
-"   vec2 view_pos = worldToScreen(pos * vec2(fieldWidth, fieldHeight));\n"
-"   gl_Position = vec4(view_pos / vec2(width, height), 0, 1);\n"
+"   vec2 ppos = (pos + 1.0f);\n"
+"   vec2 view_pos = worldToScreen(pos * vec2(fieldWidth / 2, fieldHeight / 2));\n"
+"   gl_Position = vec4((view_pos / vec2(width, height) - 0.5) * 2 * vec2(1.0f, -1.0f), 0, 1);\n"
 "   vec2 new_pos = pos * vec2(1.0f, -1.0f);\n"
 "   texCoord = (new_pos + 1.0f) / 2.0f;\n"
 "}";
