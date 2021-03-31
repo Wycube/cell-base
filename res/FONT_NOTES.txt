@@ -1,6 +1,0 @@
-Some notes about the meta data stored in the csv file:
- - First value is unicode/ascii codepoint, i.e. 65 is a capital 'A'.
- - Second value is horizontal advance, how much the cursor needs to move for the next character.
- - 3-6 values are the left, bottom, right, and top bounds of the plane that will hold the character for OpenGL.
- - 7-10 values are the left, bottom, right, and top bounds of the glyph in the bitmap file, with the origin in the bottom left corner.
- - The glyph bounds should be truncated if the pixels are accessed in a 0-indexed array, or rounded up in a 1-indexed array.
