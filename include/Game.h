@@ -18,6 +18,8 @@ typedef struct {
 typedef struct {
     GLFWwindow *window;
     int width, height;
+    int middle_mouse_down, left_mouse_down;
+    float mouse_pos[2], mouse_last[2];
     Transfrom transform;
 } Game;
 
@@ -26,5 +28,6 @@ void destroy_game(Game *game);
 
 void init_opengl_objects();
 void draw_game(Game *game, uint32_t *tex, int width, int height);
+void update_mouse(Game *game);
 
 #endif //GAME_H

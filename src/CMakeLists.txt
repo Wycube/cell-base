@@ -1,4 +1,4 @@
-add_executable(cell main.c Playfield.c Utility.c Game.c Text.c)
+add_executable(cell main.c Playfield.c Utility.c Game.c Text.c World.c)
 
 # Add some warning options
 if(MSVC)

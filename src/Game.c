@@ -57,8 +57,14 @@ Game create_game(int width, int height, const char *title) {
         printf("Loaded OpenGl Version %i.%i\n", GLVersion.major, GLVersion.minor);
     }
 
+    double dmouse_pos[2];
+    float mouse_pos[2];
+    glfwGetCursorPos(window, &dmouse_pos[0], &dmouse_pos[1]);
+    mouse_pos[0] = (float)dmouse_pos[0];
+    mouse_pos[1] = (float)dmouse_pos[1];
+
     //Create struct and return it
-    Game game = {window, width, height, {1.0f, {0.0f, 0.0f}}};
+    Game game = {window, width, height, 0, 0, {mouse_pos[0], mouse_pos[1]}, {mouse_pos[0], mouse_pos[1]}, {1.0f, {0.0f, 0.0f}}};
     return game;
 }
 
@@ -179,4 +185,13 @@ void draw_game(Game *game, uint32_t *texture, int tex_width, int tex_height) {
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex_width, tex_height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, texture);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
+void update_mouse(Game *game) {
+    double dmouse_pos[2];
+
+    glfwGetCursorPos(game->window, &dmouse_pos[0], &dmouse_pos[1]);
+
+    game->mouse_pos[0] = (float)dmouse_pos[0];
+    game->mouse_pos[1] = (float)dmouse_pos[1];
 }
