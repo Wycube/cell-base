@@ -7,4 +7,4 @@ else()
 	target_compile_options(cell PRIVATE -Wall -Wextra -pedantic)
 endif()
 
-target_link_libraries(cell glfw glad)
+target_link_libraries(cell glfw glad lua)

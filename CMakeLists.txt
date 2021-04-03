@@ -42,6 +42,9 @@ add_subdirectory(lib/glfw)
 include_directories(lib/glad/include)
 add_subdirectory(lib/glad)
 
+# Add lua
+include_directories(lib/lua-5.4.3/src)
+add_subdirectory(lib/lua-5.4.3/src)
 
 # Add project includes
 include_directories(include)
