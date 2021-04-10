@@ -7,15 +7,24 @@
 
 #include "Utility.h"
 
+
+//TODO: Do something better than exit on error
+
 Script get_script(const char *file_path) {
     lua_State *state = luaL_newstate();
     luaL_openlibs(state);
 
-    luaL_dofile(state, file_path);
+    //Run file in order to get function and variables definitions
+    //If it fails get error, either doesn't exist or there's a syntax error
+    if(luaL_dofile(state, file_path) != 0) {
+        printf("Error: %s\n", lua_tostring(state, -1));
+        exit(-1);
+    }
 
+    //Get the number of cell types
     lua_getglobal(state, "num_cell_types");
     if(!lua_isnumber(state, -1)) {
-        printf("num_cell_types not specified\n");
+        printf("Error: num_cell_types not specified!\n");
         exit(-1);
     }
     int num_cell_types = lua_tointeger(state, -1);
@@ -24,6 +33,7 @@ Script get_script(const char *file_path) {
 
     uint32_t *cell_types = (uint32_t*)malloc(sizeof(uint32_t) * num_cell_types);
 
+    //Iterate through and grab all the cell types color
     int i;
     char buffer[20];
     for(i = 0; i < num_cell_types; i++) {
@@ -31,7 +41,7 @@ Script get_script(const char *file_path) {
         
         lua_getglobal(state, buffer);
         if(!lua_istable(state, -1)) {
-            printf("%s not specified\n", buffer);
+            printf("Error: %s not specified or is not a table!\n", buffer);
             exit(-1);
         }
         float r, g, b;
@@ -66,38 +76,36 @@ void free_script(Script *script) {
 }
 
 static void stackDump (lua_State *L) {
-      printf("Stack: ");
-      
-      int i;
-      int top = lua_gettop(L);
+    int i;
+    int top = lua_gettop(L);
 
-        printf("Size:%i ", top);
+    printf("Size: %i\n", top);
 
-      for (i = 1; i <= top; i++) {  /* repeat for each level */
+    for (i = 1; i <= top; i++) {  /* repeat for each level */
         int t = lua_type(L, i);
         switch (t) {
-    
-          case LUA_TSTRING:  /* strings */
+
+            case LUA_TSTRING:  /* strings */
             printf("`%s'", lua_tostring(L, i));
             break;
-    
-          case LUA_TBOOLEAN:  /* booleans */
+
+            case LUA_TBOOLEAN:  /* booleans */
             printf(lua_toboolean(L, i) ? "true" : "false");
             break;
-    
-          case LUA_TNUMBER:  /* numbers */
+
+            case LUA_TNUMBER:  /* numbers */
             printf("%g", lua_tonumber(L, i));
             break;
-    
-          default:  /* other values */
+
+            default:  /* other values */
             printf("%s", lua_typename(L, t));
             break;
-    
+
         }
-        printf("  ");  /* put a separator */
-      }
-      printf("\n");  /* end the listing */
+        printf(" ");  /* put a separator */
     }
+    printf("\n");  /* end the listing */
+}
 
 //TODO: Add another edge case where the cells wrap around
 void push_number(lua_State *L, int *cell_field, uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
@@ -122,7 +130,8 @@ void run_cell_function(Script *script, uint32_t *field, int *cell_field, uint32_
             lua_getglobal(script->L, "update_cell");
 
             if(!lua_isfunction(script->L, -1)) {
-                printf("Function doesn't work for some reason, ????\n");
+                printf("Error: No function 'update_cell'!\n");
+                exit(-1);
             }
 
             //Push parameters onto the stack
@@ -138,12 +147,9 @@ void run_cell_function(Script *script, uint32_t *field, int *cell_field, uint32_
             push_number(script->L, cell_field, (x + 1), (y + 1), width, height);
 
             if(lua_pcall(script->L, 9, 1, 0) != 0) {
-                printf("Fail: ");
-                exit(-1);
+                printf("Function 'update_cell' execution failed:\nError: %s!\nStackdump: ", lua_tostring(script->L, -1));
                 stackDump(script->L);
-                //printf("It failed: %s\n", lua_tostring(script->L, 1));
-                //lua_pop(script->L, 1);
-                return;
+                exit(-1);
             }
 
             //Get the table that was returned

@@ -52,11 +52,19 @@ void next_gen(uint32_t *field, int width, int height) {
 }
 
 
-int main() {
+int main(int argc, char *argv[]) {
     int width = 400, height = 500;
     int fwidth = 50, fheight = 50;
 
-    Script script = get_script("D:/Spencer/dev/C/cell-base/lua/script.lua");
+    Script script;
+
+    if(argc > 1) {
+        char buffer[80];
+        sprintf(buffer, "D:/Spencer/dev/C/cell-base/lua/%s", argv[1]);
+        script = get_script(buffer);
+    } else {
+        script = get_script("D:/Spencer/dev/C/cell-base/lua/game_of_life.lua");
+    }
 
     Game game = create_game(width, height, "Cellular Automata");
     init_opengl_objects();
@@ -74,8 +82,8 @@ int main() {
     uint32_t x, y;
     for(y = 0; y < playfield.height; y++) {
         for(x = 0; x < playfield.width; x++) {
-            playfield.field[x + y * playfield.width] = (x + y % 2) % 2 == 1 ? script.cell_types[0] : script.cell_types[1];
-            playfield.cell_field[x + y * playfield.width] = (x + y % 2) % 2 == 1 ? 0 : 1;
+            playfield.field[x + y * playfield.width] = script.cell_types[0];//(x + y % 2) % 2 == 1 ? script.cell_types[0] : script.cell_types[1];
+            playfield.cell_field[x + y * playfield.width] = 0;//(x + y % 2) % 2 == 1 ? 0 : 1;
         }
     }
     
@@ -117,6 +125,12 @@ int main() {
         if(glfwGetKey(game.window, GLFW_KEY_2) == GLFW_PRESS) {
             edit_cell_type = 1;
         }
+        if(glfwGetKey(game.window, GLFW_KEY_3) == GLFW_PRESS && script.num_cell_types > 2) {
+            edit_cell_type = 2;
+        }
+        if(glfwGetKey(game.window, GLFW_KEY_4) == GLFW_PRESS && script.num_cell_types > 3) {
+            edit_cell_type = 3;
+        }
 
         update_pan_zoom(&game);
         update_edit(&game, &playfield, &script, edit_cell_type);
@@ -143,6 +157,7 @@ int main() {
     }
 
     destroy_game(&game);
+    free_script(&script);
 
     return 0;
 }

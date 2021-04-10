@@ -67,7 +67,9 @@ void update_edit(Game *game, Playfield *playfield, Script *script, uint32_t cell
             int x_index = (int)((mouse_world[0] + playfield->width/2));
             int y_index = (int)((playfield->height/2 - mouse_world[1]));
             int index = x_index + y_index * playfield->width;
-            playfield->field[index] = playfield->field[index] == BLACK ? WHITE : BLACK;
+            int new_cell_index = (playfield->cell_field[index] + 1) % script->num_cell_types;
+            playfield->cell_field[index] = new_cell_index;
+            playfield->field[index] = script->cell_types[new_cell_index];
         }
 
     } else if(glfwGetMouseButton(game->window, GLFW_MOUSE_BUTTON_1) != GLFW_PRESS) {

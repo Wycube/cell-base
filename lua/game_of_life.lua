@@ -10,15 +10,12 @@ function update_cell(nw, nn, ne, ww, cc, ee, sw, ss, se)
     neighbors = {nw, nn, ne, ww, ee, sw, ss, se}
     num = 0
 
-    --print("Me:" ..cc .. " Immediate 4: nn:" .. nn .. " ww:" .. ww .. " ee:" .. ee .. " ss:" .. ss)
-
     for i=1, 8, 1 do
         if(neighbors[i] == BLACK) then
             num = num + 1
         end
     end
 
-    -- Cell is black
     if(cc == BLACK) then
         if(num == 2 or num == 3) then
             return BLACK
