@@ -53,7 +53,7 @@ int point_in_field(float *point, Playfield *playfield) {
     && point[1] > -(float)(playfield->height/2) && point[1] < (float)(playfield->height/2);
 }
 
-void update_edit(Game *game, Playfield *playfield, uint32_t mouse_color) {
+void update_edit(Game *game, Playfield *playfield, Script *script, uint32_t cell_type_index) {
     update_mouse(game);
 
     //Get world coordinates
@@ -79,7 +79,8 @@ void update_edit(Game *game, Playfield *playfield, uint32_t mouse_color) {
             int x_index = (int)((mouse_world[0] + playfield->width/2));
             int y_index = (int)((playfield->height/2 - mouse_world[1]));
             int index = x_index + y_index * playfield->width;
-            playfield->field[index] = mouse_color;
+            playfield->cell_field[index] = cell_type_index;
+            playfield->field[index] = script->cell_types[cell_type_index];
         }
     }
 }

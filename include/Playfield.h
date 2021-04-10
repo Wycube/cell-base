@@ -7,6 +7,8 @@
 //The Playfield is a rectangle in which each integer is a cell.
 typedef struct {
     uint32_t *field, width, height;
+    int *cell_field;
+
 } Playfield;
 
 Playfield create_playfield(uint32_t width, uint32_t height);

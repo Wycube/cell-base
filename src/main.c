@@ -2,6 +2,7 @@
 
 #include "Text.h"
 #include "World.h"
+#include "Script.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -55,6 +56,8 @@ int main() {
     int width = 400, height = 500;
     int fwidth = 50, fheight = 50;
 
+    Script script = get_script("D:/Spencer/dev/C/cell-base/lua/script.lua");
+
     Game game = create_game(width, height, "Cellular Automata");
     init_opengl_objects();
 
@@ -71,7 +74,8 @@ int main() {
     uint32_t x, y;
     for(y = 0; y < playfield.height; y++) {
         for(x = 0; x < playfield.width; x++) {
-            playfield.field[x + y * playfield.width] = (x + y % 2) % 2 == 1 ? WHITE : BLACK;
+            playfield.field[x + y * playfield.width] = (x + y % 2) % 2 == 1 ? script.cell_types[0] : script.cell_types[1];
+            playfield.cell_field[x + y * playfield.width] = (x + y % 2) % 2 == 1 ? 0 : 1;
         }
     }
     
@@ -80,9 +84,9 @@ int main() {
     int generation = 0;
     int key_down = 0;
     int play = 0;
-    uint32_t mouse_color = 0x000000ff;
-    uint32_t colors[4] = {0x000000ff, 0xffffffff, 0xff0000ff, 0x00ff00ff};
+    uint32_t edit_cell_type = 1;
     char buffer[40];
+    char *running_text = "stopped";
 
     while(!glfwWindowShouldClose(game.window)) {
         glfwPollEvents();
@@ -98,27 +102,24 @@ int main() {
 
         if(( glfwGetKey(game.window, GLFW_KEY_P) == GLFW_PRESS && !key_down) || play) {
             key_down = 1;
-            next_gen(playfield.field, playfield.width, playfield.height);
+            //next_gen(playfield.field, playfield.width, playfield.height);
+            run_cell_function(&script, playfield.field, playfield.cell_field, playfield.width, playfield.height);
             generation++;
+            running_text = "running";
         } else if(glfwGetKey(game.window, GLFW_KEY_P) != GLFW_PRESS) {
             key_down = 0;
+            running_text = "stopped";
         }
 
         if(glfwGetKey(game.window, GLFW_KEY_1) == GLFW_PRESS) {
-            mouse_color = colors[0];
+            edit_cell_type = 0;
         }
         if(glfwGetKey(game.window, GLFW_KEY_2) == GLFW_PRESS) {
-            mouse_color = colors[1];
-        }
-        if(glfwGetKey(game.window, GLFW_KEY_3) == GLFW_PRESS) {
-            mouse_color = colors[2];
-        }
-        if(glfwGetKey(game.window, GLFW_KEY_4) == GLFW_PRESS) {
-            mouse_color = colors[3];
+            edit_cell_type = 1;
         }
 
         update_pan_zoom(&game);
-        update_edit(&game, &playfield, mouse_color);
+        update_edit(&game, &playfield, &script, edit_cell_type);
 
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -130,14 +131,13 @@ int main() {
         update_mouse(&game);
         screen_to_world(&game, game.mouse_pos, mouse_world);
 
-        sprintf(buffer, "Mouse World:(%.2f, %.2f)", mouse_world[0], mouse_world[1]);
-        draw_string(font, buffer, 5, 20, 0x000000ff, game.width, game.height, 20);
+        draw_string(font, running_text, 5, 20, 0x000000ff, game.width, game.height, 20);
         sprintf(buffer, "Scale:%.1f, Pos:(%.2f, %.2f)", game.transform.scale, game.transform.position.x, game.transform.position.y);
         draw_string(font, buffer, 5, 40, 0xaaaaaaff, game.width, game.height, 20);
         sprintf(buffer, "Generation: %i", generation);
         draw_string(font, buffer, 5, 60, 0x0000ffff, game.width, game.height, 20);
-        sprintf(buffer, "Color: %08X", mouse_color);
-        draw_string(font, buffer, 5, 80, mouse_color, game.width, game.height, 20);
+        sprintf(buffer, "Color: %08X", script.cell_types[edit_cell_type]);
+        draw_string(font, buffer, 5, 80, script.cell_types[edit_cell_type], game.width, game.height, 20);
 
         glfwSwapBuffers(game.window);
     }
