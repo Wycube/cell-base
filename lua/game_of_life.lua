@@ -1,12 +1,12 @@
 -- Cells are defined by their color
 num_cell_types = 2
-cell_type_0 = {1.0, 1.0, 1.0} -- On / White
-cell_type_1 = {0.0, 0.0, 0.0} -- Off / Black
+-- 1: On / White | 2: Off / Black
+cell_types = {{1.0, 1.0, 1.0}, {0.0, 0.0, 0.0}}
 
 WHITE = 0
 BLACK = 1
 
-function update_cell(nw, nn, ne, ww, cc, ee, sw, ss, se)
+function update_cell(cc, nw, nn, ne, ww, ee, sw, ss, se)
     neighbors = {nw, nn, ne, ww, ee, sw, ss, se}
     num = 0
 

@@ -1,8 +1,6 @@
 num_cell_types = 4
-cell_type_0 = {0.0, 0.0, 0.0} -- Blank Cell / BLACK
-cell_type_1 = {1.0, 1.0, 0.0} -- Conductor Cell / YELLOW
-cell_type_2 = {0.0, 0.0, 1.0} -- Electron Head Cell / BLUE
-cell_type_3 = {1.0, 0.0, 0.0} -- Electron Tail Cell / RED
+cell_types = {{0.0, 0.0, 0.0}, {1.0, 1.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}}
+-- Blank Cell / BLACK | Conductor Cell / YELLOW | Electron Head Cell / BLUE | Electron Tail Cell / RED
 
 BLACK = 0
 YELLOW = 1
@@ -10,7 +8,7 @@ BLUE = 2
 RED = 3
 
 
-function update_cell(nw, nn, ne, ww, cc, ee, sw, ss, se)
+function update_cell(cc, nw, nn, ne, ww, ee, sw, ss, se)
     local neighbors = {nw, nn, ne, ww, ee, sw, ss, se}
     
     if(cc == BLACK) then

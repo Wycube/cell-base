@@ -10,11 +10,15 @@ float min(float a, float b) {
     return a < b ? a : b;
 }
 
+float clamp(float low, float high, float val) {
+    return min(max(low, val), high);
+}
+
 uint32_t frgb_to_int(float r, float g, float b) {
     //Normalize the components
-    float rr = min(max(r, 0.0f), 1.0f);
-    float gg = min(max(g, 0.0f), 1.0f);
-    float bb = min(max(b, 0.0f), 1.0f);
+    float rr = clamp(0.0f, 1.0f, r);
+    float gg = clamp(0.0f, 1.0f, g);
+    float bb = clamp(0.0f, 1.0f, b);
 
     return rgb_to_int((uint8_t)(rr * 255), (uint8_t)(gg * 255), (uint8_t)(bb * 255));
 }

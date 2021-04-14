@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
         if(( glfwGetKey(game.window, GLFW_KEY_P) == GLFW_PRESS && !key_down) || play) {
             key_down = 1;
             //next_gen(playfield.field, playfield.width, playfield.height);
-            run_cell_function(&script, playfield.field, playfield.cell_field, playfield.width, playfield.height);
+            run_cell_update(&script, &playfield);
             generation++;
             running_text = "running";
         } else if(glfwGetKey(game.window, GLFW_KEY_P) != GLFW_PRESS) {
