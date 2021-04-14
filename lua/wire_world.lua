@@ -2,6 +2,8 @@ num_cell_types = 4
 cell_types = {{0.0, 0.0, 0.0}, {1.0, 1.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.0, 0.0}}
 -- Blank Cell / BLACK | Conductor Cell / YELLOW | Electron Head Cell / BLUE | Electron Tail Cell / RED
 
+options = {edge_case="wrap"}
+
 BLACK = 0
 YELLOW = 1
 BLUE = 2

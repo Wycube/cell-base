@@ -3,6 +3,8 @@ num_cell_types = 2
 -- 1: On / White | 2: Off / Black
 cell_types = {{1.0, 1.0, 1.0}, {0.0, 0.0, 0.0}}
 
+options = {edge_case="wrap"}
+
 WHITE = 0
 BLACK = 1
 

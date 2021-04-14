@@ -13,7 +13,6 @@ typedef int bool;
 // - Do something better than exit on error
 // - Add init function
 // - Error check color components in get_cell_color_at
-// - Add functionality for edge_case
 // - Add functionality for neighborhood
 // - Add functionality for field width and height
 // - Add 1 dimensional cellular automata
@@ -300,12 +299,18 @@ static void stackDump(lua_State *L) {
     printf("\n");  /* end the listing */
 }
 
-//TODO: Add another edge case where the cells wrap around
-void push_cell(lua_State *L, int *cell_field, uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
+void push_cell(lua_State *L, int *cell_field, int x, int y, uint32_t width, uint32_t height, bool wrap) {
     if(x >= 0 && y >= 0 && x < width && y < height) {
         lua_pushinteger(L, cell_field[x + y * width]);
     } else {
-        lua_pushinteger(L, 0);
+        if(wrap) {
+            //Wrap negatives here
+            x = x < 0 ? 50 + x : x;
+            y = y < 0 ? 50 + y : y;
+            lua_pushinteger(L, cell_field[(x % width) + (y % height) * width]);
+        } else {
+            lua_pushinteger(L, 0);
+        }
     }
 }
 
@@ -315,6 +320,7 @@ void push_cell(lua_State *L, int *cell_field, uint32_t x, uint32_t y, uint32_t w
 // update_cell(<neighbors 9>, <position 2>?, <generation 1>?)
 void run_cell_update(Script *script, Playfield *playfield) {
     int *buffer;
+    bool wrap = strcmp(script->edge_case, "wrap") == 0;
 
     if(script->buffer_field) {
         buffer = (int*)malloc(sizeof(int) * playfield->width * playfield->height);
@@ -336,15 +342,15 @@ void run_cell_update(Script *script, Playfield *playfield) {
 
             //Push parameters onto the stack
             //cc, nw, nn, ne, ww, ee, sw, ss, se
-            push_cell(script->L, playfield->cell_field, (x - 0), (y - 0), playfield->width, playfield->height);
-            push_cell(script->L, playfield->cell_field, (x - 1), (y + 1), playfield->width, playfield->height);
-            push_cell(script->L, playfield->cell_field, (x - 0), (y + 1), playfield->width, playfield->height);
-            push_cell(script->L, playfield->cell_field, (x + 1), (y + 1), playfield->width, playfield->height);
-            push_cell(script->L, playfield->cell_field, (x - 1), (y - 0), playfield->width, playfield->height);
-            push_cell(script->L, playfield->cell_field, (x + 1), (y - 0), playfield->width, playfield->height);
-            push_cell(script->L, playfield->cell_field, (x - 1), (y - 1), playfield->width, playfield->height);
-            push_cell(script->L, playfield->cell_field, (x - 0), (y - 1), playfield->width, playfield->height);
-            push_cell(script->L, playfield->cell_field, (x + 1), (y - 1), playfield->width, playfield->height);
+            push_cell(script->L, playfield->cell_field, (x - 0), (y - 0), playfield->width, playfield->height, wrap);
+            push_cell(script->L, playfield->cell_field, (x - 1), (y + 1), playfield->width, playfield->height, wrap);
+            push_cell(script->L, playfield->cell_field, (x - 0), (y + 1), playfield->width, playfield->height, wrap);
+            push_cell(script->L, playfield->cell_field, (x + 1), (y + 1), playfield->width, playfield->height, wrap);
+            push_cell(script->L, playfield->cell_field, (x - 1), (y - 0), playfield->width, playfield->height, wrap);
+            push_cell(script->L, playfield->cell_field, (x + 1), (y - 0), playfield->width, playfield->height, wrap);
+            push_cell(script->L, playfield->cell_field, (x - 1), (y - 1), playfield->width, playfield->height, wrap);
+            push_cell(script->L, playfield->cell_field, (x - 0), (y - 1), playfield->width, playfield->height, wrap);
+            push_cell(script->L, playfield->cell_field, (x + 1), (y - 1), playfield->width, playfield->height, wrap);
 
             if(script->position) {
                 lua_pushinteger(script->L, x);
