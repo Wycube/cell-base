@@ -10,7 +10,7 @@ WALL = 2
 sand_commits = {}
 commit_size = 0
 
-function update_cell(cc, nw, nn, ne, ww, ee, sw, ss, se, x, y)
+function update(c, n, w, e, s, nw, ne, sw, se, x, y)
     --print("Array size: "..commit_size)
     
     -- for i=1, commit_size do
@@ -21,7 +21,7 @@ function update_cell(cc, nw, nn, ne, ww, ee, sw, ss, se, x, y)
     --     end
     -- end
     
-    if(cc == BLANK) then
+    if(c == BLANK) then
         -- If there is sand directly above then it becomes sand
         -- If not, then if there is sand to the top left then it becomes sand
         -- Same for top right, if not it stays blank
@@ -51,29 +51,29 @@ function update_cell(cc, nw, nn, ne, ww, ee, sw, ss, se, x, y)
             return BLANK
         end
 
-    elseif(cc == WALL) then
+    elseif(c == WALL) then
         -- Wall stays wall
         return WALL
 
-    elseif(cc == SAND) then
+    elseif(c == SAND) then
         -- Sand becomes blank if there is blank under it, to the bottom left, or to the bottom right.
         -- Otherwise it stays sand
 
-        if(ss == BLANK) then
+        if(s == BLANK) then
             --print("("..x..", "..y..") => ("..x..", "..(y-1)..")")
             sand_commits[x..","..(y-1)] = true
             commit_size = commit_size + 1
             --print("Array size: "..commit_size)
             --print("Commit size: "..commit_size)
             return BLANK
-        elseif(ss == SAND) then
-            if(sw == BLANK and ww == BLANK) then
+        elseif(s == SAND) then
+            if(sw == BLANK and w == BLANK) then
                 --print("("..x..", "..y..") => ("..(x-1)..", "..(y-1)..")")
                 sand_commits[(x-1)..","..(y-1)] = true
                 commit_size = commit_size + 1
                 --print("Array size: "..commit_size)
                 return BLANK
-            elseif(se == BLANK and ee == BLANK) then
+            elseif(se == BLANK and e == BLANK) then
                 sand_commits[(x+1)..","..(y-1)] = true
                 commit_size = commit_size + 1
                 --print("Array size: "..commit_size)

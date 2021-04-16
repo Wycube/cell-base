@@ -89,7 +89,6 @@ int main(int argc, char *argv[]) {
     
     FontInfo font = create_font();
 
-    int generation = 0;
     int key_down = 0;
     int play = 0;
     uint32_t edit_cell_type = 1;
@@ -112,7 +111,7 @@ int main(int argc, char *argv[]) {
             key_down = 1;
             //next_gen(playfield.field, playfield.width, playfield.height);
             run_cell_update(&script, &playfield);
-            generation++;
+            script.generation++;
             running_text = "running";
         } else if(glfwGetKey(game.window, GLFW_KEY_P) != GLFW_PRESS) {
             key_down = 0;
@@ -148,7 +147,7 @@ int main(int argc, char *argv[]) {
         draw_string(font, running_text, 5, 20, 0x000000ff, game.width, game.height, 20);
         sprintf(buffer, "Scale:%.1f, Pos:(%.2f, %.2f)", game.transform.scale, game.transform.position.x, game.transform.position.y);
         draw_string(font, buffer, 5, 40, 0xaaaaaaff, game.width, game.height, 20);
-        sprintf(buffer, "Generation: %i", generation);
+        sprintf(buffer, "Generation: %i", script.generation);
         draw_string(font, buffer, 5, 60, 0x0000ffff, game.width, game.height, 20);
         sprintf(buffer, "Color: %08X", script.cell_types[edit_cell_type]);
         draw_string(font, buffer, 5, 80, script.cell_types[edit_cell_type], game.width, game.height, 20);

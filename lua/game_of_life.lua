@@ -8,8 +8,8 @@ options = {edge_case="wrap"}
 WHITE = 0
 BLACK = 1
 
-function update_cell(cc, nw, nn, ne, ww, ee, sw, ss, se)
-    neighbors = {nw, nn, ne, ww, ee, sw, ss, se}
+function update(c, n, e, w, s, nw, ne, sw, se)
+    neighbors = {n, e, w, s, nw, ne, sw, se}
     num = 0
 
     for i=1, 8, 1 do
@@ -18,13 +18,13 @@ function update_cell(cc, nw, nn, ne, ww, ee, sw, ss, se)
         end
     end
 
-    if(cc == BLACK) then
+    if(c == BLACK) then
         if(num == 2 or num == 3) then
             return BLACK
         else
             return WHITE
         end
-    elseif(cc == WHITE) then
+    elseif(c == WHITE) then
         if(num == 3) then
             return BLACK
         else

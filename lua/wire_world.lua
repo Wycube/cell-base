@@ -10,22 +10,22 @@ BLUE = 2
 RED = 3
 
 
-function update_cell(cc, nw, nn, ne, ww, ee, sw, ss, se)
-    local neighbors = {nw, nn, ne, ww, ee, sw, ss, se}
+function update(c, n, w, e, s, nw, ne, sw, se)
+    local neighbors = {n, w, e, s, nw, ne, sw, se}
     
-    if(cc == BLACK) then
+    if(c == BLACK) then
         -- Empty stays empty
         return BLACK
     
-    elseif(cc == BLUE) then
+    elseif(c == BLUE) then
         -- Electron head becomes electron tail
         return RED
 
-    elseif(cc == RED) then
+    elseif(c == RED) then
         -- Electron tail becomes a conductor
         return YELLOW
 
-    elseif(cc == YELLOW) then
+    elseif(c == YELLOW) then
         -- Become electron head if one or two electron heads are neighboring it
         -- otherwise stay a conductor
         local num = 0
