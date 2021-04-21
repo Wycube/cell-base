@@ -11,12 +11,7 @@ typedef int bool;
 
 //TODO: 
 // - Do something better than exit on error
-// - Add init function
-// - Error check color components in get_cell_color_at
-// - Add functionality for field width and height
 // - Add 1 dimensional cellular automata
-// - Fix block cellular automata
-// - Add option for cell edge case to choose which cell type
 
 // Utility Functions
 
@@ -118,12 +113,8 @@ int get_table_int(lua_State *L, const char *table_name, const char *field_name, 
         return default_value;
     }
 
-    stack_dump(L);
-
     int val = lua_tointeger(L, -1);
     lua_pop(L, 2);
-
-    stack_dump(L);
 
     return val;
 }
@@ -207,9 +198,43 @@ int str_to_neighborhood(const char *name) {
         return MOORE_VON_NEUMANN;
     } else if(strcmp(name, "morgolus") == 0) {
         return MORGOLUS;
+    } else if(strcmp(name, "none") == 0) {
+        return NONE;
     } else {
         return -1;
     }
+}
+
+static void stack_dump(lua_State *L) {
+    int i;
+    int top = lua_gettop(L);
+
+    printf("Size: %i | ", top);
+
+    for (i = 1; i <= top; i++) {  /* repeat for each level */
+        int t = lua_type(L, i);
+        switch (t) {
+
+            case LUA_TSTRING:  /* strings */
+            printf("`%s'", lua_tostring(L, i));
+            break;
+
+            case LUA_TBOOLEAN:  /* booleans */
+            printf(lua_toboolean(L, i) ? "true" : "false");
+            break;
+
+            case LUA_TNUMBER:  /* numbers */
+            printf("%g", lua_tonumber(L, i));
+            break;
+
+            default:  /* other values */
+            printf("%s", lua_typename(L, t));
+            break;
+
+        }
+        printf("  ");  /* put a separator */
+    }
+    printf("\n");  /* end the listing */
 }
 
 // Script Functions
@@ -247,14 +272,22 @@ Script get_script(const char *file_path) {
     bool buffer_field = get_table_bool(state, "options", "buffer_field", true);
 
     //Edge case (string)
-    const char *edge_case_str = get_table_string(state, "options", "edge_case", "cell_0");
+    const char *edge_case_str = get_table_string(state, "options", "edge_case", "cell");
 
-    if(!(strcmp(edge_case_str, "wrap") == 0 || strcmp(edge_case_str, "cell_0") == 0)) {
-        printf("[INFO]: Invalid edge_case value '%s', using 'cell_0' instead.\n", edge_case_str);
-        edge_case_str = "cell_0";
+    if(!(strcmp(edge_case_str, "wrap") == 0 || strcmp(edge_case_str, "cell") == 0)) {
+        printf("[INFO]: Invalid edge_case value '%s', using 'cell' instead.\n", edge_case_str);
+        edge_case_str = "cell";
     }
 
-    int edge_case = strcmp(edge_case_str, "wrap") == 0 ? WRAP : CELL_0;
+    int edge_case = strcmp(edge_case_str, "wrap") == 0 ? WRAP : CELL;
+
+    //Edge Case Cell type
+    int edge_cell_type = get_table_int(state, "options", "edge_cell_type", 0);
+
+    if(edge_cell_type >= num_cell_types) {
+        printf("[INFO]: Invalid edge_cell_type value %i, using 0 instead.\n", edge_cell_type);
+        edge_cell_type = 0;
+    }
 
     //Field Width (int) and Field Height (int)
     int field_width = get_table_int(state, "options", "field_width", 50);
@@ -284,15 +317,29 @@ Script get_script(const char *file_path) {
 
     int neighborhood = str_to_neighborhood(neighborhood_str);
 
+    //Type
+    int type = neighborhood == MORGOLUS ? BLOCK : REGULAR;
+
     //Get parameter options
     bool position = get_table_bool(state, "parameters", "position", false);
     bool generation = get_table_bool(state, "parameters", "generation", false);
 
-    //Type
-    int type = neighborhood == MORGOLUS ? BLOCK : REGULAR;
+    //Run possible init function
+    lua_getglobal(state, "init");
+    if(lua_isfunction(state, -1)) {
+        //Push width and height
+        lua_pushinteger(state, field_width);
+        lua_pushinteger(state, field_height);
+
+        if(lua_pcall(state, 2, 0, 0) != 0) {
+            printf("Function '%s' execution failed:\nError: %s!\nStackdump: ", "init", lua_tostring(state, -1));
+            stack_dump(state);
+            exit(-1);
+        }
+    }
 
     //Create script struct
-    Script s = {file_path, state, 0, type, num_cell_types, cell_types, buffer_field, edge_case, field_width, field_height, dimensions, neighborhood, position, generation};
+    Script s = {file_path, state, 0, type, num_cell_types, cell_types, buffer_field, edge_case, edge_cell_type, field_width, field_height, dimensions, neighborhood, position, generation};
 
     return s;
 }
@@ -303,40 +350,8 @@ void free_script(Script *script) {
     }
 }
 
-static void stack_dump(lua_State *L) {
-    int i;
-    int top = lua_gettop(L);
-
-    printf("Size: %i | ", top);
-
-    for (i = 1; i <= top; i++) {  /* repeat for each level */
-        int t = lua_type(L, i);
-        switch (t) {
-
-            case LUA_TSTRING:  /* strings */
-            printf("`%s'", lua_tostring(L, i));
-            break;
-
-            case LUA_TBOOLEAN:  /* booleans */
-            printf(lua_toboolean(L, i) ? "true" : "false");
-            break;
-
-            case LUA_TNUMBER:  /* numbers */
-            printf("%g", lua_tonumber(L, i));
-            break;
-
-            default:  /* other values */
-            printf("%s", lua_typename(L, t));
-            break;
-
-        }
-        printf("  ");  /* put a separator */
-    }
-    printf("\n");  /* end the listing */
-}
-
 void push_cell(Script *script, Playfield *playfield, int x, int y) {
-    if(x >= 0 && y >= 0 && x < playfield->width && y < playfield->height) {
+    if(x >= 0 && y >= 0 && x < (int)playfield->width && y < (int)playfield->height) {
         lua_pushinteger(script->L, playfield->cell_field[x + y * playfield->width]);
     } else {
         if(script->opt_edge_case == WRAP) {
@@ -345,25 +360,109 @@ void push_cell(Script *script, Playfield *playfield, int x, int y) {
             y = y < 0 ? 50 + y : y;
             lua_pushinteger(script->L, playfield->cell_field[(x % playfield->width) + (y % playfield->height) * playfield->width]);
         } else {
-            lua_pushinteger(script->L, 0);
+            lua_pushinteger(script->L, script->opt_edge_cell_type);
         }
     }
 }
 
+void one_d_cell_update(Script *script, Playfield *playfield);
 void regular_cell_update(Script *script, Playfield *playfield);
 void block_cell_update(Script *script, Playfield *playfield);
 
 void run_cell_update(Script *script, Playfield *playfield) {
-    if(script->opt_neighborhood == MORGOLUS) {
-        block_cell_update(script, playfield);
+    if(script->opt_dimensions == 1) {
+        one_d_cell_update(script, playfield);
     } else {
-        regular_cell_update(script, playfield);
+        if(script->opt_neighborhood == MORGOLUS) {
+            block_cell_update(script, playfield);
+        } else {
+            regular_cell_update(script, playfield);
+        }
     }
 }
 
 // The function parameter's structure looks like this
 // They are optional if they have a ?
-// update(c, n, w, e, s, <nw, ne, sw, se>?, <nn, ww, ee, ss>?, <x, y>?, <generation>?)
+// update(c, <l, r>?, <x>?, <generation>?)
+void one_d_cell_update(Script *script, Playfield *playfield) {
+    int *line_buffer;
+
+    if(script->opt_buffer_field) {
+        line_buffer = (int*)malloc(sizeof(int) * playfield->width);
+        memcpy(line_buffer, playfield->cell_field, sizeof(int) * playfield->width);
+    }
+
+    //Copy the last generations up
+    for(int y = (int)playfield->width - 2; y >= 0; y--) {
+        for(int x = 0; x < (int)playfield->width; x++) {
+            int curr_cell = playfield->cell_field[x + y * playfield->width];
+
+            playfield->cell_field[x + (y + 1) * playfield->width] = curr_cell;
+            playfield->field[x + (y + 1) * playfield->width] = script->cell_types[curr_cell];
+        }
+    }
+
+    int col_index;
+
+    for(int x = 0; x < (int)playfield->width; x++) {
+        //Push function onto the stack
+        lua_getglobal(script->L, "update");
+
+        if(!lua_isfunction(script->L, -1)) {
+            printf("Error: No function '%s'!\n", "update");
+            exit(-1);
+        }
+
+        int num_params = 0;
+
+        //Push parameters onto the stack
+        //center
+        push_cell(script, playfield, (x + 0), 0);
+        num_params += 1;
+
+        if(script->opt_neighborhood != NONE) {
+            //Push parameters l, r
+            push_cell(script, playfield, (x - 1), 0);
+            push_cell(script, playfield, (x + 1), 0);
+            num_params += 2;
+        }
+
+        if(script->param_position) {
+            lua_pushinteger(script->L, x);
+            num_params += 1;
+        }
+        if(script->param_generation) {
+            lua_pushinteger(script->L, script->generation);
+            num_params += 1;
+        }
+
+        if(lua_pcall(script->L, num_params, 1, 0) != 0) {
+            printf("Function '%s' execution failed:\nError: %s!\nStackdump: ", "update", lua_tostring(script->L, -1));
+            stack_dump(script->L);
+            exit(-1);
+        }
+
+        //Get the cell type that was returned
+        col_index = lua_tointeger(script->L, -1);
+        lua_pop(script->L, 1);
+        
+        if(script->opt_buffer_field) {
+            line_buffer[x + 0 * playfield->width] = col_index;
+        } else {
+            playfield->cell_field[x + 0 * playfield->width] = col_index;
+        }
+        playfield->field[x + 0 * playfield->width] = script->cell_types[col_index];
+    }
+
+    if(script->opt_buffer_field) {
+        memcpy(playfield->cell_field, line_buffer, sizeof(int) * playfield->width);
+        free(line_buffer);
+    }
+}
+
+// The function parameter's structure looks like this
+// They are optional if they have a ?
+// update(c, <n, w, e, s>?, <nw, ne, sw, se>?, <nn, ww, ee, ss>?, <x, y>?, <generation>?)
 void regular_cell_update(Script *script, Playfield *playfield) {
     int *buffer;
 
@@ -387,20 +486,25 @@ void regular_cell_update(Script *script, Playfield *playfield) {
             int num_params = 0;
 
             //Push parameters onto the stack
-            //c, n, w, e, s
+            //center
             push_cell(script, playfield, (x + 0), (y + 0));
-            push_cell(script, playfield, (x + 0), (y - 1));
-            push_cell(script, playfield, (x - 1), (y + 0));
-            push_cell(script, playfield, (x + 1), (y + 0));
-            push_cell(script, playfield, (x - 0), (y + 1));
-            num_params += 5;
+            num_params += 1;
+
+            if(script->opt_neighborhood != NONE) {
+                //Push parameters n, w, e, s
+                push_cell(script, playfield, (x + 0), (y + 1));
+                push_cell(script, playfield, (x - 1), (y + 0));
+                push_cell(script, playfield, (x + 1), (y + 0));
+                push_cell(script, playfield, (x - 0), (y - 1));
+                num_params += 4;
+            }
 
             if(script->opt_neighborhood == MOORE || script->opt_neighborhood == MOORE_VON_NEUMANN) {
                 //Push parameters nw, ne, sw, se
-                push_cell(script, playfield, (x - 1), (y - 1));
-                push_cell(script, playfield, (x + 1), (y - 1));
                 push_cell(script, playfield, (x - 1), (y + 1));
                 push_cell(script, playfield, (x + 1), (y + 1));
+                push_cell(script, playfield, (x - 1), (y - 1));
+                push_cell(script, playfield, (x + 1), (y - 1));
                 num_params += 4;
             }
             if(script->opt_neighborhood == VON_NEUMANN_EXT || script->opt_neighborhood == MOORE_VON_NEUMANN) {
@@ -457,10 +561,13 @@ void block_cell_update(Script *script, Playfield *playfield) {
 
     int block_offset = script->generation % 2;
 
-    for(int x = 0; x < (int)playfield->width; x += 2) {
-        for(int y = 0; y < (int)playfield->height; y += 2) {
-            int offx = (x + block_offset) % playfield->width;
-            int offy = (y + block_offset) % playfield->height;
+    for(int x = -block_offset; x < (int)playfield->width; x += 2) {
+        for(int y = -block_offset; y < (int)playfield->height; y += 2) {
+
+            int w = x;
+            int e = x + 1;
+            int n = y + 1;
+            int s = y;
 
             //Push function onto the stack
             lua_getglobal(script->L, "update");
@@ -474,16 +581,16 @@ void block_cell_update(Script *script, Playfield *playfield) {
 
             //Push parameters onto the stack
             //nw, ne, sw, se
-            push_cell(script, playfield, (offx + 0), (offy + 1));
-            push_cell(script, playfield, (offx + 1), (offy + 1));
-            push_cell(script, playfield, (offx + 0), (offy + 0));
-            push_cell(script, playfield, (offx + 1), (offy + 0));
+            push_cell(script, playfield, w, n);
+            push_cell(script, playfield, e, n);
+            push_cell(script, playfield, w, s);
+            push_cell(script, playfield, e, s);
             num_params += 4;
 
             //Optional parameters
             if(script->param_position) {
-                lua_pushinteger(script->L, x);
-                lua_pushinteger(script->L, y);
+                lua_pushinteger(script->L, w);
+                lua_pushinteger(script->L, n);
                 num_params += 2;
             }
             if(script->param_generation) {
@@ -519,21 +626,36 @@ void block_cell_update(Script *script, Playfield *playfield) {
             int se = lua_tointeger(script->L, -1);
             lua_pop(script->L, 2);
 
-            if((offy + 1) < playfield->height) {
-                playfield->cell_field[offx + (offy + 1) * playfield->width] = nw;
-                playfield->field[offx + (offy + 1) * playfield->width] = script->cell_types[nw];
-            }
-            if((offx + 1) < playfield->width && (offy + 1) < playfield->height) {
-                playfield->cell_field[(offx + 1) % playfield->width + (offy + 1) % playfield->height * playfield->width] = ne;
-                playfield->field[(offx + 1) % playfield->width + (offy + 1) % playfield->height * playfield->width] = script->cell_types[ne];
+            if(script->opt_edge_case == WRAP) {
+                w = w < 0 ? playfield->width + w : w % playfield->width;
+                e = e < 0 ? playfield->width + e : e % playfield->width;
+                n = n < 0 ? playfield->height + n : n % playfield->height;
+                s = s < 0 ? playfield->height + s : s % playfield->height;
             }
 
-            playfield->cell_field[offx + offy * playfield->width] = sw;
-            playfield->field[offx + offy * playfield->width] = script->cell_types[sw];
-
-            if((offx + 1) < playfield->width) {
-                playfield->cell_field[(offx + 1) + offy * playfield->width] = se;
-                playfield->field[(offx + 1) + offy * playfield->width] = script->cell_types[se];
+            if(w < (int)playfield->width && w >= 0) {
+                //nw
+                if(n < (int)playfield->height && n >= 0) {
+                    playfield->cell_field[w + n * playfield->width] = nw;
+                    playfield->field[w + n * playfield->width] = script->cell_types[nw];
+                }
+                //sw
+                if(s < (int)playfield->height && s >= 0) {
+                    playfield->cell_field[w + s * playfield->width] = sw;
+                    playfield->field[w + s * playfield->width] = script->cell_types[sw];
+                }
+            }
+            if(e < (int)playfield->width && e >= 0) {
+                //ne
+                if(n < (int)playfield->height && n >= 0) {
+                    playfield->cell_field[e + n * playfield->width] = ne;
+                    playfield->field[e + n * playfield->width] = script->cell_types[ne];
+                }
+                //se
+                if(s < (int)playfield->height && s >= 0) {
+                    playfield->cell_field[e + s * playfield->width] = se;
+                    playfield->field[e + s * playfield->width] = script->cell_types[se];
+                }
             }
         }
     }

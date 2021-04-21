@@ -64,7 +64,7 @@ Game create_game(int width, int height, const char *title) {
     mouse_pos[1] = (float)dmouse_pos[1];
 
     //Create struct and return it
-    Game game = {window, width, height, 0, 0, {mouse_pos[0], mouse_pos[1]}, {mouse_pos[0], mouse_pos[1]}, {1.0f, {0.0f, 0.0f}}};
+    Game game = {window, width, height, 0, 0, {mouse_pos[0], mouse_pos[1]}, {mouse_pos[0], mouse_pos[1]}, {1.0f, {0.0f, 0.0f}}, 0, 0};
     return game;
 }
 

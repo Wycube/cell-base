@@ -11,7 +11,7 @@ typedef int bool;
 #define false 0
 
 //Edge_Case
-#define CELL_0 0
+#define CELL 0
 #define WRAP 1
 
 //Neighborhood
@@ -20,6 +20,7 @@ typedef int bool;
 #define VON_NEUMANN_EXT 2
 #define MOORE_VON_NEUMANN 3
 #define MORGOLUS 4
+#define NONE 5
 
 //Automata Type
 #define REGULAR 0
@@ -40,7 +41,8 @@ typedef struct {
     //Options (specified by lua file)
     bool opt_buffer_field;
     int opt_edge_case;
-    int opt_field_width, field_height;
+    int opt_edge_cell_type;
+    int opt_field_width, opt_field_height;
     //Dimensions (1 or 2)
     int opt_dimensions;
     //Neighborhood (moore, von_neumann, von_neumann_ext, moore_von_neumann, morgolus)
