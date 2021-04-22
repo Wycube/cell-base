@@ -3,7 +3,7 @@
 #include "Text.h"
 #include "World.h"
 #include "Script.h"
-#include "Edit.h"
+#include "Circle.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -96,7 +96,12 @@ int main(int argc, char *argv[]) {
         }
 
         update_pan_zoom(&game);
-        update_edit(&game, &playfield, &script, edit_cell_type);
+
+        if(game.use_circle) {
+            update_circle_edit(&game, &playfield, &script, edit_cell_type, game.circle_radius);
+        } else {
+            update_edit(&game, &playfield, &script, edit_cell_type);
+        }
 
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -109,19 +114,20 @@ int main(int argc, char *argv[]) {
         screen_to_world(&game, game.mouse_pos, mouse_world);
 
         if(game.use_circle) {
-            Circle display_circle = {game.mouse_pos[0], game.mouse_pos[1], game.circle_radius * game.transform.scale / 2};
-            draw_circle(&display_circle, game.width, game.height);
+            Circle display_circle = {game.mouse_pos[0], game.mouse_pos[1], game.circle_radius * game.transform.scale};
+            draw_circle(&display_circle, game.width, game.height, script.cell_types[edit_cell_type]);
         }
 
         draw_string(font, running_text, 5, 20, 0x000000ff, game.width, game.height, 20);
-        sprintf(buffer, "Circle Radius: %.0f", game.circle_radius);
-        draw_string(font, buffer, 5, 40, 0x000000ff, game.width, game.height, 20);
         sprintf(buffer, "Scale:%.1f, Pos:(%.2f, %.2f)", game.transform.scale, game.transform.position.x, game.transform.position.y);
-        draw_string(font, buffer, 5, 60, 0xaaaaaaff, game.width, game.height, 20);
-        sprintf(buffer, "Generation: %i", script.generation);
-        draw_string(font, buffer, 5, 80, 0x0000ffff, game.width, game.height, 20);
+        draw_string(font, buffer, 5, 40, 0x000000ff, game.width, game.height, 20);
+        sprintf(buffer, "Circle Radius: %.1f", game.circle_radius);
+        draw_string(font, buffer, 5, 60, 0x000000ff, game.width, game.height, 20);
         sprintf(buffer, "Color: %08X", script.cell_types[edit_cell_type]);
-        draw_string(font, buffer, 5, 100, script.cell_types[edit_cell_type], game.width, game.height, 20);
+        draw_string(font, buffer, 5, 80, 0x000000ff, game.width, game.height, 20);
+        draw_string(font, "                [COLOR]", 5, 80, script.cell_types[edit_cell_type], game.width, game.height, 20);
+        sprintf(buffer, "Generation: %i", script.generation);
+        draw_string(font, buffer, 5, 100, 0x000000ff, game.width, game.height, 20);
 
         glfwSwapBuffers(game.window);
     }

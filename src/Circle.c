@@ -1,4 +1,6 @@
-#include "Edit.h"
+#include "Circle.h"
+
+#include "Utility.h"
 
 #include <glad/glad.h>
 #include <stdio.h>
@@ -19,18 +21,18 @@ const char *circle_fragment =
 "uniform vec2 center;\n"
 "uniform vec2 dimensions;\n"
 "uniform float radius;\n"
+"uniform vec3 color;"
 "float thickness = 1;\n"
 "\n"
-"vec2 gl_to_screen(vec2 position) {"
-"   return ((position + 1) / 2) * dimensions;"
-"}"
+"vec2 gl_to_screen(vec2 position) {\n"
+"   return ((position + 1) / 2) * dimensions;\n"
+"}\n"
 "\n"
 "void main() {\n"
 "   vec2 pos = gl_to_screen(frag_pos);\n"
-"   vec2 diff = center - pos;\n"
-"   float len = length(diff);\n"
+"   float len = distance(center, pos);\n"
 "   if(len >= radius - thickness && len <= radius + thickness) {\n"
-"       gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);\n"
+"       gl_FragColor = vec4(color, 0.5);\n"
 "   } else {\n"
 "       gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);\n"
 "   }\n"
@@ -44,7 +46,7 @@ Circle create_circle(float x, float y, float radius) {
     return circle;
 }
 
-void draw_circle(Circle *circle, int width, int height) {
+void draw_circle(Circle *circle, int width, int height, uint32_t color) {
     glBindBuffer(GL_ARRAY_BUFFER, circle_vbo);
     glUseProgram(circle_program);
 
@@ -54,9 +56,14 @@ void draw_circle(Circle *circle, int width, int height) {
     unsigned int u_center = glGetUniformLocation(circle_program, "center");
     unsigned int u_dimensions = glGetUniformLocation(circle_program, "dimensions");
     unsigned int u_radius = glGetUniformLocation(circle_program, "radius");
+    unsigned int u_color = glGetUniformLocation(circle_program, "color");
     glUniform2f(u_center, circle->x, circle->y);
     glUniform2f(u_dimensions, width, height);
     glUniform1f(u_radius, circle->radius);
+
+    float color_vec[4];
+    int_to_vec4(color_vec, color);
+    glUniform3f(u_color, color_vec[0], color_vec[1], color_vec[2]);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA ,GL_ONE_MINUS_SRC_ALPHA);

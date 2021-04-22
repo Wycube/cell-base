@@ -1,6 +1,7 @@
-#ifndef EDIT_H
-#define EDIT_H
+#ifndef CIRCLE_H
+#define CIRCLE_H
 
+#include <stdint.h>
 
 typedef struct {
     float x, y;
@@ -8,7 +9,7 @@ typedef struct {
 } Circle;
 
 Circle create_circle(float x, float y, float radius);
-void draw_circle(Circle *circle, int width, int height);
+void draw_circle(Circle *circle, int width, int height, uint32_t color);
 void init_circle_draw();
 
-#endif //EDIT_H
+#endif //CIRCLE_H

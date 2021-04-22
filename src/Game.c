@@ -149,7 +149,7 @@ void init_opengl_objects() {
     glEnableVertexAttribArray(pos_attrib);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+    glClearColor(0.66f, 0.66f, 0.66f, 1.0f);
 }
 
 void draw_game(Game *game, uint32_t *texture, int tex_width, int tex_height) {

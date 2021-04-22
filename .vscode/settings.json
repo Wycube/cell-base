@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "lualib.h": "c"
+        "lualib.h": "c",
+        "circle.h": "c"
     }
 }

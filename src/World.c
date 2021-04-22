@@ -1,5 +1,7 @@
 #include "World.h"
 
+#include <math.h>
+
 void screen_to_world(Game *game, float *sc, float *wc) {
     wc[0] = (float)sc[0] / game->transform.scale - game->transform.position.x;
     wc[1] = (float)sc[1] / game->transform.scale - game->transform.position.y;
@@ -10,7 +12,7 @@ void scroll_callback(GLFWwindow *window, double xscroll, double yscroll) {
     (void)xscroll;
 
     if(game->use_circle && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-        game->circle_radius += yscroll;
+        game->circle_radius += yscroll * 0.5f;
 
         if(game->circle_radius < 0) {
             game->circle_radius = 0;
@@ -106,6 +108,84 @@ void update_edit(Game *game, Playfield *playfield, Script *script, uint32_t cell
                 int index = x_index + y_index * playfield->width;
                 playfield->cell_field[index] = cell_type_index;
                 playfield->field[index] = script->cell_types[cell_type_index];
+            }
+        }
+    }
+}
+
+void update_circle_edit(Game *game, Playfield *playfield, Script *script, uint32_t cell_type_index, float radius) {
+    update_mouse(game);
+
+    //Get world coordinates
+    float mouse_world[2];
+    screen_to_world(game, game->mouse_pos, mouse_world);
+    
+    if(glfwGetMouseButton(game->window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS && !game->left_mouse_down) {
+        game->left_mouse_down = 1;
+
+        int iradius = (int)radius;
+        int r_2 = iradius * iradius;
+
+        for(int x = -iradius; x < iradius; x++) {
+            for(int y = -iradius; y < iradius; y++) {
+                float point[2] = {mouse_world[0] - x, mouse_world[1] - y};
+
+                //Skip this cell if it is out of the circle
+                if((x * x + y * y) >= r_2) {
+                    continue;
+                }
+
+                if(point_in_field(point, playfield)) {
+                    int x_index = (int)((point[0] + playfield->width / 2));
+                    int y_index = (int)((playfield->height / 2 - point[1]));
+
+                    if(script->opt_dimensions == 1) {
+                        if(y_index == 0) {
+                            int new_cell_index = (playfield->cell_field[x_index] + 1) % script->num_cell_types;
+                            playfield->cell_field[x_index] = new_cell_index;
+                            playfield->field[x_index] = script->cell_types[new_cell_index];
+                        }
+                    } else {
+                        int index = x_index + y_index * playfield->width;
+                        int new_cell_index = (playfield->cell_field[index] + 1) % script->num_cell_types;
+                        playfield->cell_field[index] = new_cell_index;
+                        playfield->field[index] = script->cell_types[new_cell_index];
+                    }
+                }
+            }
+        }
+
+    } else if(glfwGetMouseButton(game->window, GLFW_MOUSE_BUTTON_1) != GLFW_PRESS) {
+        game->left_mouse_down = 0;
+    }
+
+    if(glfwGetMouseButton(game->window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {
+        int iradius = (int)radius;
+        int r_2 = iradius * iradius;
+
+        for(int x = -iradius; x < iradius; x++) {
+            for(int y = -iradius; y < iradius; y++) {
+                float point[2] = {mouse_world[0] - x, mouse_world[1] - y};
+
+                //Skip this cell if it is out of the circle
+                if((x * x + y * y) >= r_2) {
+                    continue;
+                }
+
+                if(point_in_field(point, playfield)) {
+                    int x_index = (int)((point[0] + playfield->width/2));
+                    int y_index = (int)((playfield->height/2 - point[1]));
+                    if(script->opt_dimensions == 1) {
+                        if(y_index == 0) {
+                            playfield->cell_field[x_index] = cell_type_index;
+                            playfield->field[x_index] = script->cell_types[cell_type_index];
+                        }
+                    } else {
+                        int index = x_index + y_index * playfield->width;
+                        playfield->cell_field[index] = cell_type_index;
+                        playfield->field[index] = script->cell_types[cell_type_index];
+                    }
+                }
             }
         }
     }
