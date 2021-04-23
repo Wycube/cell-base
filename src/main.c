@@ -8,7 +8,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-//Far-Reaching Goals:
+//Far-Reaching (and some not that far-reaching) Goals:
 // - Hexagonal Cellular automata
 // - Regular cellular automata that can modify cells other than itself
 // - 3D cellular automata ??
@@ -16,6 +16,9 @@
 // - Add life-like cellular automata rules and other rule notations
 // - Elementary cellular automata rule notation
 // - Ant-like, or termite-like, cellular automata options
+// - Color defined by 0 - 255 as well
+// - User data specified in lua and stored in script struct, passed to and returned from lua update function
+// - Add a resize callback to make window resizing SMOOTH
 
 int main(int argc, char *argv[]) {
     int width = 400, height = 500;
@@ -56,7 +59,7 @@ int main(int argc, char *argv[]) {
 
     int key_down = 0, circle_key_down = 0;
     int play = 0;
-    uint32_t edit_cell_type = 1;
+    uint32_t edit_cell_type = 0;
     char buffer[40];
     char *running_text = "stopped";
 
