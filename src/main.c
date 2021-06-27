@@ -26,8 +26,24 @@ int main(int argc, char *argv[]) {
     Script script;
 
     if(argc > 1) {
+		int i = 0;
+		char c = 1;
+		bool not_in_examples = false;
+		
+		while(c != 0) {
+			c = argv[1][i];
+			i++;
+			
+			if(c == '/' || c == '\\') {
+				not_in_examples = true;
+				break;
+			}
+		}
+		
+		
         char buffer[80];
-        sprintf(buffer, "D:/Spencer/dev/C/cell-base/examples/%s", argv[1]);
+        if(!not_in_examples) sprintf(buffer, "D:/Spencer/dev/C/cell-base/examples/%s", argv[1]);
+		else strcpy(buffer, argv[1]);
         script = get_script(buffer);
     } else {
         script = get_script("D:/Spencer/dev/C/cell-base/examples/game_of_life.lua");

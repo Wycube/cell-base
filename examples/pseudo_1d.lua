@@ -28,7 +28,6 @@ function update(c, n, w, e, s, x, y)
         return next_state[w..c..e]
     elseif(c == 0) then
         if(s == 1 or s == 2) then
-            print("south: "..s)
             return 2
         else
             return 0
