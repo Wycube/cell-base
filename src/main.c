@@ -1,24 +1,12 @@
-#include <stdio.h>
-
 #include "Text.h"
 #include "World.h"
 #include "Script.h"
 #include "Circle.h"
 
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-//Far-Reaching (and some not that far-reaching) Goals:
-// - Hexagonal Cellular automata
-// - Regular cellular automata that can modify cells other than itself
-// - 3D cellular automata ??
-// - Optimize / Parrelleize
-// - Add life-like cellular automata rules and other rule notations
-// - Elementary cellular automata rule notation
-// - Ant-like, or termite-like, cellular automata options
-// - Color defined by 0 - 255 as well
-// - User data specified in lua and stored in script struct, passed to and returned from lua update function
-// - Add a resize callback to make window resizing SMOOTH
 
 int main(int argc, char *argv[]) {
     int width = 400, height = 500;
@@ -26,27 +14,10 @@ int main(int argc, char *argv[]) {
     Script script;
 
     if(argc > 1) {
-		int i = 0;
-		char c = 1;
-		bool not_in_examples = false;
-		
-		while(c != 0) {
-			c = argv[1][i];
-			i++;
-			
-			if(c == '/' || c == '\\') {
-				not_in_examples = true;
-				break;
-			}
-		}
-		
-		
-        char buffer[80];
-        if(!not_in_examples) sprintf(buffer, "D:/Spencer/dev/C/cell-base/examples/%s", argv[1]);
-		else strcpy(buffer, argv[1]);
-        script = get_script(buffer);
+        script = get_script(argv[1]);
     } else {
-        script = get_script("D:/Spencer/dev/C/cell-base/examples/game_of_life.lua");
+        printf("No lua script specified!\n");
+        return 0;
     }
 
     Game game = create_game(width, height, "Cellular Automata");
